@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jogo da Bolinha - Fase 1</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="startScreen">
+    <div id="title">TADS ADVENTURE</div>
+    <div id="subtitle">Use WASD ou Setas para mover. Espaço para pular.</div>
+    <button id="playBtn">JOGAR</button>
+</div>
+
+<div id="dialogueOverlay">
+    <div id="dialogueText"></div>
+    <div id="dialogueHint">Clique para continuar...</div>
+</div>
+
+<div id="fade"></div>
+
+<canvas id="gameCanvas" width="1280" height="720"></canvas>
+
+<audio id="bgm" src="fase1.mp3" loop></audio>
+<audio id="jumpSound" src="somdepulo.mp3"></audio>
+
+<script src="game.js"></script>
+
+</body>
+</html>
