@@ -58,9 +58,9 @@ body, html {
     cursor: pointer;
     box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
     transition: transform 0.2s, background 0.2s;
-    /* display: none; <-- REMOVIDO PARA EXIBIÇÃO IMEDIATA */
-    opacity: 0; /* Começa escondido, mas aparece pelo JS */
-    animation: fadeIn 1s forwards 1.8s; /* Aparece após o título */
+    /* Botão aparece animado após o título */
+    opacity: 0; 
+    animation: fadeIn 1s forwards 1.8s; 
 }
 
 #playBtn:hover {
@@ -68,14 +68,14 @@ body, html {
     background: #ff1493;
 }
 
-/* Estilo do Diálogo - Tema Dark */
+/* Estilo do Diálogo */
 #dialogueOverlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #000; /* Preto Sólido */
+    background-color: #000;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -113,6 +113,9 @@ canvas {
     display: block;
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
     margin: 0 auto;
+    /* Adicionado para responsividade via JS */
+    max-width: 100%; 
+    height: auto; 
 }
 
 /* Fade-out da fase final */
@@ -129,7 +132,7 @@ canvas {
     z-index: 5;
 }
 
-/* --- Controles Móveis --- */
+/* --- Controles Móveis (Padrão para Desktop) --- */
 #mobile-controls {
     position: absolute;
     bottom: 20px;
@@ -149,7 +152,7 @@ canvas {
     width: 60px;
     height: 60px;
     margin: 0 10px;
-    background: rgba(255, 105, 180, 0.7); /* Pink com transparência */
+    background: rgba(255, 105, 180, 0.7);
     color: white;
     border: none;
     border-radius: 50%;
@@ -183,4 +186,58 @@ canvas {
     font-size: 28px;
     margin-left: 20px;
 }
-/* --- Fim Controles Móveis --- */
+
+/* -------------------------------------- */
+/* --- Adaptação Responsiva (Celulares) --- */
+/* -------------------------------------- */
+
+@media (max-width: 768px) {
+    
+    #startScreen {
+        padding: 0 10px;
+    }
+    
+    #title {
+        font-size: 50px;
+    }
+
+    #subtitle {
+        font-size: 16px;
+    }
+
+    #playBtn {
+        padding: 12px 40px;
+        font-size: 20px;
+        margin-top: 30px;
+    }
+
+    /* Controles Móveis: Otimização para toque */
+    #mobile-controls {
+        bottom: 10px;
+        width: 100%;
+        padding: 0 5px;
+    }
+    
+    .mobile-btn {
+        width: 50px;
+        height: 50px;
+        margin: 0 5px;
+        font-size: 18px;
+    }
+
+    .jump-btn {
+        width: 70px;
+        height: 70px;
+        font-size: 24px;
+        margin-left: 15px;
+    }
+
+    /* Diálogo */
+    #dialogueText {
+        font-size: 24px;
+        max-width: 90%;
+    }
+}
+/* -------------------------------------- */
+/* --- Fim Adaptação Responsiva --- */
+/* -------------------------------------- */
