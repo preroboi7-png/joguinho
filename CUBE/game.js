@@ -8,6 +8,20 @@ const startScreen = document.getElementById("startScreen");
 const dialogueOverlay = document.getElementById("dialogueOverlay");
 const dialogueText = document.getElementById("dialogueText");
 const dialogueHint = document.getElementById("dialogueHint");
+// Elementos de Controle Móvel
+const mobileControls = document.getElementById("mobile-controls");
+const leftBtn = document.getElementById("left-btn");
+const rightBtn = document.getElementById("right-btn");
+const jumpBtn = document.getElementById("jump-btn");
+const eBtn = document.getElementById("e-btn");
+
+let mobileKeys = {
+    left: false,
+    right: false,
+    jump: false,
+    interact: false
+};
+let usingMobileControls = false;
 
 let gameStarted = false;
 let keys = {};
@@ -45,13 +59,17 @@ let ending = false;
 // --- Diálogos e Efeito de Digitação ---
 const dialogueLines = [
     "...",
-    "Sair de casa faz parte da vida...",
-    "Mas acabei esquecendo de me despedir dos meus pais...",
-    "Bom... a essa altura, nem vejo minha casa...",
-    "Não posso ficar lamentando...",
-    "Esse mundo é bem bonito...",
-    "O que será que o mundo tem para mim?",
-    "Acho que... vejo uma porta lá na frente..."
+    "Sair-de-casa-faz-parte-da-vida...",
+    "Mas-acabei-esquecendo-de-me-despedir-dos-meus-pais...",
+    "Bom...",
+    "a-essa-altura...",
+    "nem-vejo-minha-casa...",
+    "Não-posso-ficar-lamentando...",
+    "...",
+    "Esse-mundo-é-bem-bonito...",
+    "O-que-será-que-o-mundo-tem-para-mim?",
+    "Acho-que...",
+    "vejo-uma-porta-lá-na-frente..."
 ];
 let dialogueIndex = 0;
 let inDialogue = false;
@@ -60,7 +78,8 @@ let typingTimeout;
 let charIndex = 0;
 
 // --- Inicialização Procedural ---
-function initWorld() {
+function initWorld()
+{
     // Nuvens
     for (let i = 0; i < levelLength; i += Math.random() * 400 + 200) {
         clouds.push({ x: i, y: Math.random() * 200 + 50, scale: Math.random() * 0.5 + 0.5 });
@@ -68,7 +87,7 @@ function initWorld() {
     // Árvores
     for (let i = 0; i < levelLength; i += Math.random() * 300 + 100) {
         let foliageType = Math.random(); 
-        trees.push({ 
+        trees.push({
             x: i, 
             h: Math.random() * 50 + 80, 
             type: foliageType,
@@ -109,10 +128,9 @@ function initWorld() {
 
 initWorld();
 
-// --- Controles (CORRIGIDO BUG DO SHIFT) ---
+// --- Controles de Teclado ---
 window.addEventListener("keydown", e => {
     keys[e.key] = true;
-    // Garante redundância para evitar teclas presas se o Shift for pressionado
     if(e.key.length === 1) {
         keys[e.key.toLowerCase()] = true;
         keys[e.key.toUpperCase()] = true;
@@ -121,22 +139,64 @@ window.addEventListener("keydown", e => {
 
 window.addEventListener("keyup", e => {
     keys[e.key] = false;
-    // Limpa todas as variações da tecla para evitar o bug do Shift
     if(e.key.length === 1) {
         keys[e.key.toLowerCase()] = false;
         keys[e.key.toUpperCase()] = false;
     }
 });
 
+// --- Controles Móveis (Touch/Mouse) ---
+function setupMobileControls() {
+    // Esquerda
+    leftBtn.addEventListener("touchstart", () => { mobileKeys.left = true; usingMobileControls = true; });
+    leftBtn.addEventListener("touchend", () => { mobileKeys.left = false; });
+    leftBtn.addEventListener("mousedown", () => { mobileKeys.left = true; usingMobileControls = true; });
+    leftBtn.addEventListener("mouseup", () => { mobileKeys.left = false; });
+
+    // Direita
+    rightBtn.addEventListener("touchstart", () => { mobileKeys.right = true; usingMobileControls = true; });
+    rightBtn.addEventListener("touchend", () => { mobileKeys.right = false; });
+    rightBtn.addEventListener("mousedown", () => { mobileKeys.right = true; usingMobileControls = true; });
+    rightBtn.addEventListener("mouseup", () => { mobileKeys.right = false; });
+
+    // Pular
+    jumpBtn.addEventListener("touchstart", () => { mobileKeys.jump = true; usingMobileControls = true; });
+    jumpBtn.addEventListener("touchend", () => { mobileKeys.jump = false; });
+    jumpBtn.addEventListener("mousedown", () => { mobileKeys.jump = true; usingMobileControls = true; });
+    jumpBtn.addEventListener("mouseup", () => { mobileKeys.jump = false; });
+
+    // Interagir (E) - Ação de clique simples
+    eBtn.addEventListener("click", () => { 
+        if (!ending) {
+            mobileKeys.interact = true; 
+            usingMobileControls = true;
+            // Interação por clique é instantânea, simula o keydown e keyup imediatamente
+            setTimeout(() => { mobileKeys.interact = false; }, 100); 
+        }
+    });
+
+    // Ativar visibilidade dos controles
+    mobileControls.classList.add('active');
+}
+// --- Fim Controles Móveis ---
+
 // --- Física ---
 function physics() {
     if (!gameStarted) return; 
+    
+    // Lógica de Movimento com Prioridade para Móvel ou Teclado
+    let moveRight = keys["ArrowRight"] || keys["d"] || keys["D"] || mobileKeys.right;
+    let moveLeft = keys["ArrowLeft"] || keys["a"] || keys["A"] || mobileKeys.left;
+    let doJump = keys[" "] || keys["ArrowUp"] || keys["w"] || keys["W"] || mobileKeys.jump;
+    let doInteract = keys["e"] || keys["E"] || mobileKeys.interact;
 
     // Movimento Horizontal
-    if (keys["ArrowRight"] || keys["d"] || keys["D"]) {
+    if (moveRight)
+    {
         player.vx = player.speed;
         player.angle += 0.15;
-    } else if (keys["ArrowLeft"] || keys["a"] || keys["A"]) {
+    } else if (moveLeft)
+    {
         player.vx = -player.speed;
         player.angle -= 0.15;
     } else {
@@ -146,7 +206,7 @@ function physics() {
     player.x += player.vx;
 
     // Pulo
-    if ((keys[" "] || keys["ArrowUp"] || keys["w"] || keys["W"]) && player.onGround) {
+    if (doJump && player.onGround) {
         player.vy = player.jumpStrength;
         player.onGround = false;
         jumpSound.currentTime = 0; 
@@ -171,7 +231,7 @@ function physics() {
             if (player.y + player.radius > p.y &&
                 player.y + player.radius < p.y + p.h + player.vy + 5 &&
                 player.vy >= 0) {
-                
+               
                 player.y = p.y - player.radius;
                 player.vy = 0;
                 player.onGround = true;
@@ -188,7 +248,7 @@ function physics() {
     nearDoor = player.x > door.x - 50 && player.x < door.x + 100;
     
     // Interação com a Porta
-    if (nearDoor && (keys["e"] || keys["E"]) && !ending) {
+    if (nearDoor && doInteract && !ending) { 
         endLevel();
     }
 }
@@ -200,8 +260,10 @@ function goToNextLevel() {
 }
 
 // --- Finalizar Fase (com transição) ---
-function endLevel() {
+function endLevel()
+{
     ending = true;
+    mobileControls.classList.remove('active'); // Desativa os botões
     document.getElementById("fade").style.opacity = 1;
     fadeOutAudio();
     
@@ -290,7 +352,7 @@ function draw() {
             ctx.fillRect(px - 5, p.y - 10, p.w + 10, 10);
             ctx.fillStyle = "#2E8B57";
             for(let i=0; i<p.w; i+=20) {
-                 ctx.beginPath(); ctx.arc(px + i, p.y + p.h, 8, 0, Math.PI, false); ctx.fill();
+                ctx.beginPath(); ctx.arc(px + i, p.y + p.h, 8, 0, Math.PI, false); ctx.fill();
             }
         }
     });
@@ -399,12 +461,14 @@ function finishIntro() {
         bgm.volume = 0.5;
         bgm.play();
         gameStarted = true;
+        setupMobileControls();
     }, 1500); 
 }
 
 // Evento de clique no diálogo
 dialogueOverlay.addEventListener("click", () => {
-    if (inDialogue) {
+    if (inDialogue)
+    {
         if (isTyping) {
             clearTimeout(typingTimeout);
             dialogueText.innerText = dialogueLines[dialogueIndex];
@@ -419,10 +483,8 @@ dialogueOverlay.addEventListener("click", () => {
 // Loop principal
 loop();
 
-setTimeout(() => {
-    document.getElementById("playBtn").style.display = "block";
-}, 1800);
-
+// Lógica do botão Play
+// Não é necessário o setTimeout para mostrar o botão, pois o CSS agora cuida disso com 'animation: fadeIn 1s forwards 1.8s;'
 document.getElementById("playBtn").onclick = () => {
     startIntro();
 };
