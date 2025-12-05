@@ -3,13 +3,27 @@ const ctx = canvas.getContext("2d");
 const bgm = document.getElementById("bgm");
 const jumpSound = document.getElementById("jumpSound");
 
+// Elementos de Controle Móvel
+const mobileControls = document.getElementById("mobile-controls");
+const leftBtn = document.getElementById("left-btn");
+const rightBtn = document.getElementById("right-btn");
+const jumpBtn = document.getElementById("jump-btn");
+const eBtn = document.getElementById("e-btn");
+
+let mobileKeys = {
+    left: false,
+    right: false,
+    jump: false,
+    interact: false
+};
+let usingMobileControls = false;
+
 let gameStarted = false;
 let keys = {};
 
 // --- Configuração da Fase 2 ---
 let cameraX = 0;
 const levelLength = 20000; 
-// O chão agora é dinâmico (array de alturas)
 const terrain = []; 
 
 // Elementos
@@ -20,9 +34,6 @@ const trees = [];
 // Variáveis do Evento de Áudio
 let audioGlitchTriggered = false;
 let audioRestored = false;
-// --- NOVO: Variável para controlar o texto de Sussurros ---
-let showWhispersText = false; 
-// --- Fim NOVO ---
 
 // --- Implementação do Susto ---
 const jumpScareImage = new Image();
@@ -50,7 +61,8 @@ let nearDoor = false;
 let ending = false;
 
 // --- Inicialização Procedural (O Morro) ---
-function initWorld() {
+function initWorld()
+{
     let currentHeight = 100; // Altura do chão (distância do fundo da tela)
     let currentX = 0;
     
@@ -79,9 +91,7 @@ function initWorld() {
             // Plano (1 segmento)
             segLength = flatSegmentLength;
             heightChange = 0;
-            // Garantir que a altura não suba/desça durante o plano
             if (currentX > 500) {
-                // Ajustar a altura para que o próximo degrau comece na altura correta
                 currentHeight = Math.max(100, currentHeight);
             }
         }
@@ -93,7 +103,7 @@ function initWorld() {
             h: currentHeight
         });
 
-        // Gerar Árvores neste segmento (Lógica anterior mantida)
+        // Gerar Árvores neste segmento
         if (Math.random() > 0.3) {
             trees.push({
                 x: currentX + Math.random() * segLength,
@@ -105,7 +115,6 @@ function initWorld() {
         // Aplica a mudança de altura
         if (currentX > 500) {
             currentHeight += heightChange;
-            // Limite inferior para não cair abaixo do chão
             if (currentHeight < 100) currentHeight = 100;
         }
         
@@ -115,7 +124,8 @@ function initWorld() {
 
     // Definir posição Y da porta
     let doorGround = terrain.findLast(t => t.x < door.x + door.w);
-    if (doorGround) {
+    if (doorGround)
+    {
         door.y = canvas.height - doorGround.h - door.h;
     } else {
         door.y = 500; // Fallback
@@ -129,11 +139,46 @@ function initWorld() {
 
 initWorld();
 
-// --- Controles ---
+// --- Controles de Teclado ---
 window.addEventListener("keydown", e => keys[e.key] = true);
 window.addEventListener("keyup", e => keys[e.key] = false);
 
-// --- Lógica de Áudio (Glitch) com Texto "Sussurros" ---
+// --- Controles Móveis (Touch/Mouse) ---
+function setupMobileControls() {
+    // Esquerda
+    leftBtn.addEventListener("touchstart", () => { mobileKeys.left = true; usingMobileControls = true; });
+    leftBtn.addEventListener("touchend", () => { mobileKeys.left = false; });
+    leftBtn.addEventListener("mousedown", () => { mobileKeys.left = true; usingMobileControls = true; });
+    leftBtn.addEventListener("mouseup", () => { mobileKeys.left = false; });
+
+    // Direita
+    rightBtn.addEventListener("touchstart", () => { mobileKeys.right = true; usingMobileControls = true; });
+    rightBtn.addEventListener("touchend", () => { mobileKeys.right = false; });
+    rightBtn.addEventListener("mousedown", () => { mobileKeys.right = true; usingMobileControls = true; });
+    rightBtn.addEventListener("mouseup", () => { mobileKeys.right = false; });
+
+    // Pular
+    jumpBtn.addEventListener("touchstart", () => { mobileKeys.jump = true; usingMobileControls = true; });
+    jumpBtn.addEventListener("touchend", () => { mobileKeys.jump = false; });
+    jumpBtn.addEventListener("mousedown", () => { mobileKeys.jump = true; usingMobileControls = true; });
+    jumpBtn.addEventListener("mouseup", () => { mobileKeys.jump = false; });
+
+    // Interagir (E) - Ação de clique simples
+    eBtn.addEventListener("click", () => { 
+        if (!ending) {
+            mobileKeys.interact = true; 
+            usingMobileControls = true;
+            setTimeout(() => { mobileKeys.interact = false; }, 100); 
+        }
+    });
+
+    // Ativar visibilidade dos controles
+    mobileControls.classList.add('active');
+}
+// --- Fim Controles Móveis ---
+
+
+// --- Lógica de Áudio (Glitch) ---
 function handleAudioEvent() {
     // Gatilho do Glitch no meio da fase (ex: 40% a 60%)
     if (player.x > levelLength * 0.4 && player.x < levelLength * 0.6 && !audioGlitchTriggered) {
@@ -143,17 +188,7 @@ function handleAudioEvent() {
         // Simula o "Chiar" / Parada
         bgm.pause();
         
-        // --- NOVO: Mostrar texto "Sussurros" após 2 segundos ---
-        setTimeout(() => {
-            showWhispersText = true;
-            // Esconder o texto depois de um tempo curto (ex: 3 segundos)
-            setTimeout(() => {
-                showWhispersText = false;
-            }, 3000);
-        }, 2000); // 2 segundos após a música parar
-        // --- Fim NOVO ---
-        
-        // Voltar após 10 segundos (mantido)
+        // Voltar após 10 segundos
         setTimeout(() => {
             if (!ending) {
                 // Reinicia a reprodução do ponto atual.
@@ -166,11 +201,21 @@ function handleAudioEvent() {
 
 // --- Física ---
 function physics() {
+    
+    // Lógica de Movimento com Prioridade para Móvel ou Teclado
+    let moveRight = keys["ArrowRight"] || keys["d"] || keys["D"] || mobileKeys.right;
+    let moveLeft = keys["ArrowLeft"] || keys["a"] || keys["A"] || mobileKeys.left;
+    let doJump = keys[" "] || keys["ArrowUp"] || keys["w"] || keys["W"] || mobileKeys.jump;
+    let doInteract = keys["e"] || keys["E"] || mobileKeys.interact;
+
+
     // Movimento
-    if (keys["ArrowRight"] || keys["d"] || keys["D"]) {
+    if (moveRight)
+    {
         player.vx = player.speed;
         player.angle += 0.15;
-    } else if (keys["ArrowLeft"] || keys["a"] || keys["A"]) {
+    } else if (moveLeft)
+    {
         player.vx = -player.speed;
         player.angle -= 0.15;
     } else {
@@ -179,7 +224,7 @@ function physics() {
     player.x += player.vx;
 
     // Pulo
-    if ((keys[" "] || keys["ArrowUp"] || keys["w"] || keys["W"]) && player.onGround) {
+    if (doJump && player.onGround) {
         player.vy = player.jumpStrength;
         player.onGround = false;
         jumpSound.currentTime = 0;
@@ -191,7 +236,7 @@ function physics() {
     player.onGround = false;
 
     // --- Colisão com o Terreno Dinâmico (Morro) ---
-    let currentGroundY = canvas.height + player.radius; // Valor padrão para evitar cair infinitamente
+    let currentGroundY = canvas.height + player.radius; 
     
     for (let t of terrain) {
         if (player.x >= t.x && player.x < t.x + t.w) {
@@ -213,6 +258,7 @@ function physics() {
             if (player.y + player.radius > p.y &&
                 player.y + player.radius < p.y + p.h + player.vy + 5 &&
                 player.vy >= 0) {
+               
                 player.y = p.y - player.radius;
                 player.vy = 0;
                 player.onGround = true;
@@ -230,14 +276,16 @@ function physics() {
 
     // Porta
     nearDoor = player.x > door.x - 50 && player.x < door.x + 100;
-    if (nearDoor && (keys["e"] || keys["E"]) && !ending) {
+    if (nearDoor && doInteract && !ending) { 
         endLevel();
     }
 }
 
 // --- Finalizar Fase (Agora com o Susto) ---
-function endLevel() {
+function endLevel()
+{
     ending = true;
+    mobileControls.classList.remove('active'); // Desativa os botões
     
     // 1. Interrompe a música de fundo
     bgm.pause();
@@ -262,7 +310,6 @@ function draw() {
     if (jumpScareActive) {
         // Desenha a imagem na tela inteira
         ctx.drawImage(jumpScareImage, 0, 0, canvas.width, canvas.height);
-        // Não desenha mais nada e sai
         return; 
     }
 
@@ -272,20 +319,6 @@ function draw() {
     gradient.addColorStop(1, "#E0F7FA");
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // --- NOVO: Desenhar o texto "Sussurros" no fundo (Camada 1.5) ---
-    if (showWhispersText) {
-        // Usa a posição da câmera para fixar o texto no "horizonte" do cenário
-        let textX = canvas.width / 2;
-        let textY = canvas.height / 3; // Posição no céu
-        
-        // Texto semi-transparente e grande, como uma aparição no fundo
-        ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
-        ctx.font = "bold 80px 'Courier New', Courier, monospace";
-        ctx.textAlign = "center";
-        ctx.fillText("Sussurros", textX, textY);
-    }
-    // --- Fim NOVO ---
 
     // 2. Nuvens (Parallax)
     ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
@@ -301,7 +334,6 @@ function draw() {
     });
 
     // 3. Terreno (O Morro)
-    // O terreno é desenhado como uma série de retângulos conectados
     ctx.fillStyle = "#32CD32"; // Grama
     
     terrain.forEach(t => {
@@ -396,16 +428,12 @@ function draw() {
     ctx.fill();
 
     ctx.fillStyle = "white";
-    ctx.beginPath();
-ctx.arc(10, -10, 8, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath();
-ctx.arc(18, 5, 8, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(10, -10, 8, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(18, 5, 8, 0, Math.PI*2); ctx.fill();
 
     ctx.fillStyle = "black";
-    ctx.beginPath();
-ctx.arc(12, -10, 3, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath();
-ctx.arc(20, 5, 3, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(12, -10, 3, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(20, 5, 3, 0, Math.PI*2); ctx.fill();
 
     ctx.restore();
 }
@@ -418,16 +446,11 @@ function loop() {
 
 loop();
 
-// Inicia o botão PLAY
-setTimeout(() => {
-    // Certifique-se de que o elemento existe no HTML, o que é esperado
-    const playBtn = document.getElementById("playBtn");
-    if(playBtn) playBtn.style.display = "block";
-}, 1800);
-
+// Lógica do botão Play
 document.getElementById("playBtn").onclick = () => {
     document.getElementById("startScreen").style.display = "none";
     bgm.volume = 0.5;
     bgm.play();
     gameStarted = true;
+    setupMobileControls();
 };
