@@ -3,6 +3,33 @@ const ctx = canvas.getContext("2d");
 const bgm = document.getElementById("bgm");
 const jumpSound = document.getElementById("jumpSound");
 
+// --- FUNÇÃO DE RESPONSIVIDADE ---
+function resizeCanvas() {
+    const aspectRatio = 16 / 9;
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+
+    let newWidth, newHeight;
+
+    // Calcula o tamanho que o canvas deve ter para caber na tela mantendo 16:9
+    if (windowWidth / windowHeight > aspectRatio) {
+        newHeight = windowHeight;
+        newWidth = windowHeight * aspectRatio;
+    } else {
+        newWidth = windowWidth;
+        newHeight = windowWidth / aspectRatio;
+    }
+
+    // Aplica o tamanho visual (style)
+    canvas.style.width = `${newWidth}px`;
+    canvas.style.height = `${newHeight}px`;
+}
+
+// Chama a função uma vez no início e registra o evento de redimensionamento
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+// --- FIM FUNÇÃO DE RESPONSIVIDADE ---
+
 // Elementos de UI
 const startScreen = document.getElementById("startScreen");
 const dialogueOverlay = document.getElementById("dialogueOverlay");
@@ -170,7 +197,6 @@ function setupMobileControls() {
         if (!ending) {
             mobileKeys.interact = true; 
             usingMobileControls = true;
-            // Interação por clique é instantânea, simula o keydown e keyup imediatamente
             setTimeout(() => { mobileKeys.interact = false; }, 100); 
         }
     });
@@ -255,7 +281,6 @@ function physics() {
 
 // --- TRANSICAO DE FASE ---
 function goToNextLevel() {
-    // Redireciona o navegador para o próximo arquivo
     window.location.href = "fase2.html";
 }
 
@@ -263,11 +288,10 @@ function goToNextLevel() {
 function endLevel()
 {
     ending = true;
-    mobileControls.classList.remove('active'); // Desativa os botões
+    mobileControls.classList.remove('active');
     document.getElementById("fade").style.opacity = 1;
     fadeOutAudio();
     
-    // Chama a função que executa a transição após o áudio e o fade visual
     setTimeout(goToNextLevel, 3500); 
 }
 
@@ -281,7 +305,7 @@ function fadeOutAudio() {
     }
 }
 
-// --- Desenho (sem mudanças, apenas estética) ---
+// --- Desenho ---
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -415,7 +439,6 @@ function loop() {
 
 function startIntro() {
     inDialogue = true;
-    // CORTE RÁPIDO
     startScreen.style.display = "none"; 
     
     dialogueOverlay.style.opacity = 1; 
@@ -484,7 +507,6 @@ dialogueOverlay.addEventListener("click", () => {
 loop();
 
 // Lógica do botão Play
-// Não é necessário o setTimeout para mostrar o botão, pois o CSS agora cuida disso com 'animation: fadeIn 1s forwards 1.8s;'
 document.getElementById("playBtn").onclick = () => {
     startIntro();
 };
