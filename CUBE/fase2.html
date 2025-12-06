@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jogo da Bolinha - Fase 2: A Noite</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="startScreen">
+    <div id="title" class="dark-title">FASE 2</div>
+    <div id="subtitle">A cidade está silenciosa...</div>
+    <button id="playBtn">COMEÇAR</button>
+</div>
+
+<div id="whiteOverlay"></div>
+<div id="blackOverlay"></div>
+
+<img id="scareImage" src="" alt="Imagem Evento" style="display:none;">
+
+<div id="dialogueBox">
+    <p id="dialogueText"></p>
+    <div id="dialogueHint">▼</div>
+</div>
+
+<canvas id="gameCanvas" width="1280" height="720"></canvas>
+
+<div id="mobile-controls">
+    <div class="left-controls">
+        <button class="mobile-btn" id="left-btn">&larr;</button>
+        <button class="mobile-btn" id="right-btn">&rarr;</button>
+    </div>
+    <div class="right-controls">
+        <button class="mobile-btn" id="e-btn">E</button>
+        <button class="mobile-btn jump-btn" id="jump-btn">Pular</button>
+    </div>
+</div>
+
+<audio id="bgm" src="fase2.mp3" loop></audio>
+<audio id="bgmNoitada" src="noitada.mp3" loop></audio>
+<audio id="bgmCorre" src="corre.mp3" loop></audio>
+<audio id="jumpSound" src="somdepulo.mp3"></audio>
+
+<audio id="sfxRaio" src="raio.mp3"></audio>
+<audio id="sfxSusto" src="susto.mp3"></audio>
+<audio id="sfxHaha" src="haha.mp3"></audio>
+
+<script src="game2.js"></script>
+
+</body>
+</html>

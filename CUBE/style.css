@@ -1,0 +1,133 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #050505;
+}
+
+/* Tela inicial Sombria */
+#startScreen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, #222, #000);
+    color: #eee;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 50;
+}
+
+.dark-title {
+    font-size: 80px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0px 0px 10px #555;
+    animation: fadeInSlow 3s forwards;
+}
+
+#playBtn {
+    margin-top: 50px;
+    padding: 15px 60px;
+    font-size: 24px;
+    background: #333;
+    color: white;
+    border: 1px solid #555;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+#playBtn:hover { background: #555; }
+
+/* Overlays de Efeito */
+#whiteOverlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: white; 
+    opacity: 0; 
+    pointer-events: none; 
+    z-index: 40;
+    /* Padrão: Transição lenta (usado para sair do raio e para o final do jogo) */
+    transition: opacity 3s ease-in-out; 
+}
+
+#blackOverlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: black; 
+    opacity: 0; 
+    pointer-events: none; 
+    z-index: 35;
+    transition: opacity 1s ease-in-out;
+}
+
+/* Imagem Centralizada */
+#scareImage {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%; height: 100%;
+    object-fit: contain;
+    z-index: 60;
+}
+
+/* Caixa de Diálogo */
+#dialogueBox {
+    position: absolute;
+    bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-width: 800px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #fff;
+    padding: 20px;
+    display: none;
+    z-index: 45;
+    text-align: center;
+}
+
+#dialogueText {
+    color: white;
+    font-size: 24px;
+    min-height: 1.2em;
+    white-space: pre-wrap;
+}
+
+.red-text {
+    color: #ff0000 !important;
+    text-shadow: 2px 2px 0px #300;
+}
+
+#dialogueHint {
+    color: #aaa;
+    margin-top: 10px;
+    animation: bounce 1s infinite;
+    display: none;
+}
+
+canvas {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Controles */
+#mobile-controls {
+    position: absolute; bottom: 20px; width: 95%;
+    display: flex; justify-content: space-between;
+    padding: 0 10px; z-index: 30; pointer-events: none;
+}
+#mobile-controls.active { pointer-events: auto; }
+.mobile-btn {
+    width: 60px; height: 60px; margin: 0 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #fff; color: white;
+    border-radius: 50%; font-size: 20px;
+    display: flex; justify-content: center; align-items: center;
+}
+.mobile-btn:active { background: #fff; color: #000; }
+.jump-btn { width: 80px; height: 80px; }
+
+@keyframes fadeInSlow { from {opacity:0;} to {opacity:1;} }
+@keyframes bounce { 0%, 100% {transform: translateY(0);} 50% {transform: translateY(5px);} }

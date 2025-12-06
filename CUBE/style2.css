@@ -1,0 +1,243 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #222;
+}
+
+/* Tela inicial */
+#startScreen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, #333, #000);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+#title {
+    font-size: 80px;
+    font-weight: bold;
+    text-shadow: 4px 4px 0px #FF69B4;
+    opacity: 0;
+    animation: explode 1.5s forwards;
+}
+
+#subtitle {
+    margin-top: 20px;
+    font-size: 20px;
+    color: #ccc;
+    opacity: 0;
+    animation: fadeIn 2s forwards 1s;
+}
+
+@keyframes explode {
+    0% { transform: scale(0.1); opacity: 0; }
+    60% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+#playBtn {
+    margin-top: 50px;
+    padding: 15px 60px;
+    font-size: 24px;
+    font-weight: bold;
+    border: none;
+    background: #FF69B4;
+    color: white;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
+    transition: transform 0.2s, background 0.2s;
+    /* Botão aparece animado após o título */
+    opacity: 0; 
+    animation: fadeIn 1s forwards 1.8s; 
+}
+
+#playBtn:hover {
+    transform: scale(1.1);
+    background: #ff1493;
+}
+
+/* Estilo do Diálogo */
+#dialogueOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 2s ease-in-out;
+}
+
+#dialogueText {
+    color: #eee;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 32px;
+    text-align: center;
+    max-width: 70%;
+    line-height: 1.5;
+    margin-bottom: 40px;
+    min-height: 100px;
+}
+
+#dialogueHint {
+    color: #444;
+    font-size: 14px;
+    font-family: monospace;
+    animation: blink 1.5s infinite;
+    visibility: hidden;
+}
+
+@keyframes blink {
+    50% { opacity: 0.3; }
+}
+
+canvas {
+    display: block;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    margin: 0 auto;
+    /* Adicionado para responsividade via JS */
+    max-width: 100%; 
+    height: auto; 
+}
+
+/* Fade-out da fase final */
+#fade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 3s ease-in;
+    z-index: 5;
+}
+
+/* --- Controles Móveis (Padrão para Desktop) --- */
+#mobile-controls {
+    position: absolute;
+    bottom: 20px;
+    width: 95%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+    z-index: 30;
+    pointer-events: none;
+}
+
+#mobile-controls.active {
+    pointer-events: auto;
+}
+
+.mobile-btn {
+    width: 60px;
+    height: 60px;
+    margin: 0 10px;
+    background: rgba(255, 105, 180, 0.7);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    transition: transform 0.1s, background 0.1s;
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.mobile-btn:active {
+    background: #ff1493;
+    transform: scale(0.9);
+}
+
+.left-controls {
+    display: flex;
+}
+.right-controls {
+    display: flex;
+    align-items: flex-end;
+}
+
+.jump-btn {
+    width: 80px;
+    height: 80px;
+    font-size: 28px;
+    margin-left: 20px;
+}
+
+/* -------------------------------------- */
+/* --- Adaptação Responsiva (Celulares) --- */
+/* -------------------------------------- */
+
+@media (max-width: 768px) {
+    
+    #startScreen {
+        padding: 0 10px;
+    }
+    
+    #title {
+        font-size: 50px;
+    }
+
+    #subtitle {
+        font-size: 16px;
+    }
+
+    #playBtn {
+        padding: 12px 40px;
+        font-size: 20px;
+        margin-top: 30px;
+    }
+
+    /* Controles Móveis: Otimização para toque */
+    #mobile-controls {
+        bottom: 10px;
+        width: 100%;
+        padding: 0 5px;
+    }
+    
+    .mobile-btn {
+        width: 50px;
+        height: 50px;
+        margin: 0 5px;
+        font-size: 18px;
+    }
+
+    .jump-btn {
+        width: 70px;
+        height: 70px;
+        font-size: 24px;
+        margin-left: 15px;
+    }
+
+    /* Diálogo */
+    #dialogueText {
+        font-size: 24px;
+        max-width: 90%;
+    }
+}
+/* -------------------------------------- */
+/* --- Fim Adaptação Responsiva --- */
+/* -------------------------------------- */
