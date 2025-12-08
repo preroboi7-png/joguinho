@@ -671,7 +671,7 @@ function draw() {
         ctx.fill();
         ctx.fillStyle = "black";
         ctx.font = "bold 16px Arial";
-        ctx.fillText("Já vou, mãe!", pX + 35, pY - 55);
+        ctx.fillText("Já vô, mãe!", pX + 35, pY - 55);
         ctx.save(); 
     }
     ctx.restore();
@@ -763,4 +763,5 @@ loop();
 document.getElementById("playBtn").onclick = () => {
     startIntroSequence();
 };
+
 
