@@ -159,17 +159,18 @@ let ending = false;
 // --- Diálogos ---
 const dialogueLines = [
     "...",
-    "Sair-de-casa-faz-parte-da-vida...",
-    "Mas-acabei-esquecendo-de-me-despedir-dos-meus-pais...",
-    "Bom...",
+    "O-tempo-passa...",
+    "Talvez-esse-seja-o-único-momento-da-vida...",
+    "em-que-a-palavra-preocupação-não-exista...",
     "a-essa-altura...",
-    "nem-vejo-minha-casa...",
-    "Não-posso-ficar-lamentando...",
+    "nem-via-mais-minha-casa...",
+    "brincar-e-comer-doces...",
     "...",
-    "Esse-mundo-é-bem-bonito...",
-    "O-que-será-que-o-mundo-tem-para-mim?",
-    "Acho-que...",
-    "vejo-uma-casa-amigável-lá-na-frente..." 
+    "Esse-era-meu-mundo...",
+    "...",
+    "As-vezes-me-perguntava...",
+    "Como-será-que-o-mundo-é?",
+    "Então-minha-mãe-me-chamava-para-comer..." 
 ];
 let dialogueIndex = 0;
 let inDialogue = false;
@@ -762,3 +763,4 @@ loop();
 document.getElementById("playBtn").onclick = () => {
     startIntroSequence();
 };
+
