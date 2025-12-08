@@ -10,8 +10,9 @@ const risadaSound = document.getElementById("risadaSound");
 const maeSound = document.getElementById("maeSound");
 const risobalaSound = document.getElementById("risobalaSound");
 
-// Elemento de Imagem
-const introImage = document.getElementById("introImage");
+// --- MUDANÇA: Referências para as duas imagens ---
+const introImage1 = document.getElementById("introImage1");
+const introImage2 = document.getElementById("introImage2");
 
 // --- FUNÇÃO DE RESPONSIVIDADE ---
 function resizeCanvas() {
@@ -49,7 +50,7 @@ let mobileKeys = { left: false, right: false, jump: false, interact: false };
 let usingMobileControls = false;
 
 let gameStarted = false;
-let gamePaused = false; // Novo estado para pausar durante cutscene
+let gamePaused = false; 
 let keys = {};
 
 // --- Configuração do Mundo ---
@@ -66,7 +67,7 @@ const butterflies = [];
 
 // --- Arrays de Coletáveis ---
 const lollipops = [];
-const candies = []; // Array para as Balas
+const candies = []; 
 
 // --- Variáveis de Eventos ---
 let maeEventTriggered = false;
@@ -306,7 +307,7 @@ function setupMobileControls() {
 
 // --- Física ---
 function physics() {
-    if (!gameStarted || gamePaused) return; // Pausa se a cutscene estiver rolando
+    if (!gameStarted || gamePaused) return; 
     
     let moveRight = keys["ArrowRight"] || keys["d"] || keys["D"] || mobileKeys.right;
     let moveLeft = keys["ArrowLeft"] || keys["a"] || keys["A"] || mobileKeys.left;
@@ -414,15 +415,9 @@ function physics() {
 // --- FUNÇÕES DA CUTSCENE DO PIRULITO ---
 function startLollipopCutscene() {
     gamePaused = true;
-    
-    // Fade out música
     fadeOutAudioFast();
-    
-    // Fade in do overlay preto
     dialogueOverlay.style.opacity = 1;
     dialogueOverlay.style.pointerEvents = "auto";
-    
-    // Inicia o diálogo
     startDialogueSequence();
 }
 
@@ -441,7 +436,6 @@ function resumeGameAfterCutscene() {
     dialogueOverlay.style.opacity = 0;
     dialogueOverlay.style.pointerEvents = "none";
     
-    // Volta imagem do jogo e música
     setTimeout(() => {
         bgm.volume = 0.5;
         bgm.play();
@@ -481,7 +475,7 @@ function nextDialogue() {
     if (dialogueIndex < dialogueLines.length) {
         startTypewriter();
     } else {
-        resumeGameAfterCutscene(); // Volta ao jogo ao fim do texto
+        resumeGameAfterCutscene(); 
     }
 }
 
@@ -519,32 +513,17 @@ function draw() {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // --- NOVO: SOL SORRINDO (Fixo no fundo) ---
-    // Desenha o sol no canto direito superior (não afetado pela cameraX para parecer distante)
+    // SOL SORRINDO 
     const sunX = canvas.width - 100;
     const sunY = 100;
-    
-    // Corpo
     ctx.fillStyle = "#FFD700";
-    ctx.beginPath();
-    ctx.arc(sunX, sunY, 50, 0, Math.PI * 2);
-    ctx.fill();
-    // Brilho
-    ctx.strokeStyle = "rgba(255, 215, 0, 0.5)";
-    ctx.lineWidth = 10;
-    ctx.stroke();
-    
-    // Olhos
+    ctx.beginPath(); ctx.arc(sunX, sunY, 50, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "rgba(255, 215, 0, 0.5)"; ctx.lineWidth = 10; ctx.stroke();
     ctx.fillStyle = "black";
     ctx.beginPath(); ctx.arc(sunX - 15, sunY - 10, 5, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(sunX + 15, sunY - 10, 5, 0, Math.PI * 2); ctx.fill();
-    
-    // Sorriso
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(sunX, sunY, 30, 0.2 * Math.PI, 0.8 * Math.PI);
-    ctx.stroke();
+    ctx.strokeStyle = "black"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(sunX, sunY, 30, 0.2 * Math.PI, 0.8 * Math.PI); ctx.stroke();
 
     // 2. Nuvens
     ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
@@ -630,7 +609,7 @@ function draw() {
         }
     });
 
-    // --- NOVO: Desenho das Balas ---
+    // Balas
     candies.forEach(c => {
         if (!c.collected) {
             let cx = c.x - cameraX;
@@ -639,26 +618,10 @@ function draw() {
                 ctx.save();
                 ctx.translate(cx, cy);
                 ctx.rotate(c.rotation);
-                
-                // Formato Bala
                 ctx.fillStyle = c.color;
-                ctx.beginPath();
-                ctx.ellipse(0, 0, 12, 8, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Embrulho (triângulos nas pontas)
-                ctx.beginPath();
-                ctx.moveTo(-12, 0);
-                ctx.lineTo(-20, -6);
-                ctx.lineTo(-20, 6);
-                ctx.fill();
-                
-                ctx.beginPath();
-                ctx.moveTo(12, 0);
-                ctx.lineTo(20, -6);
-                ctx.lineTo(20, 6);
-                ctx.fill();
-                
+                ctx.beginPath(); ctx.ellipse(0, 0, 12, 8, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(-12, 0); ctx.lineTo(-20, -6); ctx.lineTo(-20, 6); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(12, 0); ctx.lineTo(20, -6); ctx.lineTo(20, 6); ctx.fill();
                 ctx.restore();
             }
         }
@@ -731,40 +694,43 @@ function draw() {
 }
 
 function loop() {
-    // Se o jogo começou e NÃO está pausado pela cutscene
     if (gameStarted && !gamePaused && !ending) physics();
-    
-    // Desenha mesmo pausado para não sumir a tela
     draw(); 
     requestAnimationFrame(loop);
 }
 
-// --- LOGICA DE INTRODUÇÃO MODIFICADA ---
+// --- NOVA LÓGICA DE INTRODUÇÃO SEQUENCIAL (Take 1 -> Take 2) ---
 
 function startIntroSequence() {
-    startScreen.style.display = "none";
+    startScreen.style.display = "none"; // Esconde tela de título
     
-    // 1. Mostrar imagem (Fade In)
-    introImage.style.display = "block";
-    
-    // Pequeno delay para permitir a transição CSS funcionar
-    setTimeout(() => {
-        introImage.style.opacity = 1;
-    }, 100);
+    // --- FASE 1: Take 1 ---
+    // Garante que a imagem 1 esteja visível para o fade in
+    introImage1.style.opacity = 1;
 
-    // 2. Esperar um tempo e dar Fade Out na imagem / Iniciar Jogo
+    // Espera 5 segundos (Tempo da Take 1)
     setTimeout(() => {
-        introImage.style.opacity = 0;
-        
-        // 3. Clarear a tela do jogo e começar música
-        startGameplay();
-        
-        // Remove a imagem do DOM visualmente após o fade out terminar
+        // --- FASE 2: Transição Take 1 -> Take 2 ---
+        introImage1.style.opacity = 0; // Fade Out Take 1
+        introImage2.style.opacity = 1; // Fade In Take 2
+
+        // Espera mais 5 segundos (Tempo da Take 2)
         setTimeout(() => {
-            introImage.style.display = "none";
-        }, 2000);
+            // --- FASE 3: Finalizar Intro e Iniciar Jogo ---
+            introImage2.style.opacity = 0; // Fade Out Take 2
+            
+            // Inicia o gameplay (clarear canvas e tocar música)
+            startGameplay();
+            
+            // Limpeza: remove as imagens do fluxo visual após o fade out terminar
+            setTimeout(() => {
+                introImage1.style.display = 'none';
+                introImage2.style.display = 'none';
+            }, 2000);
 
-    }, 3000); // Tempo que a imagem fica na tela
+        }, 5000); // Duração da Take 2
+
+    }, 5000); // Duração da Take 1
 }
 
 function startGameplay() {
