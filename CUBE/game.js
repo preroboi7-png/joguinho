@@ -1,7 +1,13 @@
+// game.js
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const bgm = document.getElementById("bgm");
 const jumpSound = document.getElementById("jumpSound");
+
+// --- NOVOS SONS ---
+const risadaSound = document.getElementById("risadaSound");
+const maeSound = document.getElementById("maeSound");
 
 // --- FUNÇÃO DE RESPONSIVIDADE ---
 function resizeCanvas() {
@@ -64,6 +70,14 @@ const clouds = [];
 const trees = [];
 const flowers = [];
 const butterflies = [];
+
+// --- NOVO: Array de Pirulitos ---
+const lollipops = [];
+
+// --- NOVO: Variáveis do Evento da Mãe ---
+let maeEventTriggered = false;
+let showMaeText = false;
+let maeTextTimer = 0;
 
 // --- Jogador ---
 const player = {
@@ -186,8 +200,7 @@ let typingTimeout;
 let charIndex = 0;
 
 // --- Inicialização Procedural ---
-function initWorld()
-{
+function initWorld() {
     // Nuvens
     for (let i = 0; i < levelLength; i += Math.random() * 400 + 200) {
         clouds.push({ x: i, y: Math.random() * 200 + 50, scale: Math.random() * 0.5 + 0.5 });
@@ -229,8 +242,32 @@ function initWorld()
         const heightLevel = Math.random() > 0.5 ? 450 : 350;
         if (Math.random() > 0.3) {
             platforms.push({ x: currentX, y: heightLevel, w: width, h: 20 });
+            
+            // --- NOVO: Chance de gerar Pirulito na plataforma ---
+            if (Math.random() > 0.4) {
+                lollipops.push({
+                    x: currentX + width / 2, // No meio da plataforma
+                    y: heightLevel - 30,     // Um pouco acima
+                    collected: false,
+                    color1: `hsl(${Math.random() * 360}, 80%, 60%)`, // Cor 1
+                    color2: "white" // Cor 2
+                });
+            }
         }
         currentX += width + gap;
+    }
+
+    // --- NOVO: Pirulitos no chão (áreas vazias) ---
+    for (let i = 500; i < levelLength - 500; i += 800) {
+        if (Math.random() > 0.5) {
+            lollipops.push({
+                x: i,
+                y: canvas.height - groundHeight - 40,
+                collected: false,
+                color1: `hsl(${Math.random() * 360}, 80%, 60%)`,
+                color2: "white"
+            });
+        }
     }
 }
 
@@ -298,12 +335,10 @@ function physics() {
     let doInteract = keys["e"] || keys["E"] || mobileKeys.interact;
 
     // Movimento Horizontal
-    if (moveRight)
-    {
+    if (moveRight) {
         player.vx = player.speed;
         player.angle += 0.15;
-    } else if (moveLeft)
-    {
+    } else if (moveLeft) {
         player.vx = -player.speed;
         player.angle -= 0.15;
     } else {
@@ -346,6 +381,35 @@ function physics() {
         }
     });
 
+    // --- NOVO: Colisão com Pirulitos ---
+    lollipops.forEach(l => {
+        if (!l.collected) {
+            const dx = player.x - l.x;
+            const dy = player.y - l.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < player.radius + 20) { // 20 é aprox o raio do pirulito
+                l.collected = true;
+                risadaSound.currentTime = 0;
+                risadaSound.play();
+            }
+        }
+    });
+
+    // --- NOVO: Evento da Mãe (Metade da Fase) ---
+    // Metade da fase é levelLength / 2
+    if (!maeEventTriggered && player.x > levelLength / 2) {
+        maeEventTriggered = true;
+        maeSound.play();
+        
+        // Ativa o texto logo após o som começar
+        setTimeout(() => {
+            showMaeText = true;
+            // O texto some após 4 segundos
+            setTimeout(() => { showMaeText = false; }, 4000);
+        }, 500); 
+    }
+
     // Câmera
     cameraX = player.x - 400;
     if (cameraX < 0) cameraX = 0;
@@ -371,8 +435,7 @@ function goToNextLevel() {
 }
 
 // --- Finalizar Fase (com transição) ---
-function endLevel()
-{
+function endLevel() {
     ending = true;
     mobileControls.classList.remove('active');
     document.getElementById("fade").style.opacity = 1;
@@ -467,6 +530,32 @@ function draw() {
         }
     });
 
+    // --- NOVO: Desenho dos Pirulitos ---
+    lollipops.forEach(l => {
+        if (!l.collected) {
+            let lx = l.x - cameraX;
+            let ly = l.y;
+            
+            // Renderiza apenas se estiver na tela
+            if (lx > -50 && lx < canvas.width + 50) {
+                // Palito
+                ctx.fillStyle = "white";
+                ctx.fillRect(lx - 2, ly, 4, 30);
+                
+                // Doce (Espiral simples simulada com círculos concêntricos)
+                const radius = 15;
+                ctx.fillStyle = l.color1;
+                ctx.beginPath(); ctx.arc(lx, ly, radius, 0, Math.PI*2); ctx.fill();
+                
+                ctx.fillStyle = l.color2;
+                ctx.beginPath(); ctx.arc(lx, ly, radius * 0.6, 0, Math.PI*2); ctx.fill();
+
+                ctx.fillStyle = l.color1;
+                ctx.beginPath(); ctx.arc(lx, ly, radius * 0.3, 0, Math.PI*2); ctx.fill();
+            }
+        }
+    });
+
     // 6. CASA (Substitui o desenho da porta)
     casaFamilia.desenhar(ctx, cameraX);
 
@@ -499,6 +588,36 @@ function draw() {
     ctx.fillStyle = "black";
     ctx.beginPath(); ctx.arc(12, -10, 3, 0, Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.arc(20, 5, 3, 0, Math.PI*2); ctx.fill();
+    
+    // --- NOVO: Balão de Fala do Jogador (Já vou, mãe) ---
+    if (showMaeText) {
+        ctx.restore(); // Restaura para coordenadas normais temporariamente
+        // Precisamos recalcular posição de tela para o texto
+        const pX = player.x - cameraX;
+        const pY = player.y;
+
+        // Balão
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        ctx.roundRect(pX + 20, pY - 80, 140, 40, 10);
+        ctx.fill();
+        
+        // Pontinha do balão
+        ctx.beginPath();
+        ctx.moveTo(pX + 30, pY - 40);
+        ctx.lineTo(pX + 20, pY - 20);
+        ctx.lineTo(pX + 50, pY - 40);
+        ctx.fill();
+
+        // Texto
+        ctx.fillStyle = "black";
+        ctx.font = "bold 16px Arial";
+        ctx.fillText("Já vou, mãe!", pX + 35, pY - 55);
+
+        // Volta ao estado salvo para não quebrar o resto (se houver mais desenhos)
+        ctx.save(); 
+    }
+    
     ctx.restore();
 
     // 8. Borboletas (Não alterado)
@@ -580,8 +699,7 @@ function finishIntro() {
 
 // Evento de clique no diálogo
 dialogueOverlay.addEventListener("click", () => {
-    if (inDialogue)
-    {
+    if (inDialogue) {
         if (isTyping) {
             clearTimeout(typingTimeout);
             dialogueText.innerText = dialogueLines[dialogueIndex];
